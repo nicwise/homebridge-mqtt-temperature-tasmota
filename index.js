@@ -6,7 +6,7 @@
 		"accessory": "mqtt-temperature-tasmota",
 
 		"name": "NAME OF THIS ACCESSORY",
-	
+
 		"url": "mqtt://MQTT-ADDRESS",
 		"username": "MQTT USER NAME",
 		"password": "MQTT PASSWORD",
@@ -48,9 +48,9 @@ function TemperatureTasmotaAccessory(log, config) {
 
   	this.url = config['url'];
   	this.topic = config['topic'];
-	
+
 	this.sensorPropertyName = config["sensorPropertyName"] || "Sensor";
-	
+
 	if (config["activityTopic"] !== undefined) {
 		this.activityTopic = config["activityTopic"];
 		this.activityParameter = config["activityParameter"];
@@ -86,7 +86,7 @@ function TemperatureTasmotaAccessory(log, config) {
 	}
 
   this.client  = mqtt.connect(this.url, this.options);
-  
+
   	this.client.on('error', function () {
 		that.log('Error event on MQTT')
 	});
@@ -123,6 +123,8 @@ function TemperatureTasmotaAccessory(log, config) {
 				that.temperature = parseFloat(data.DHT.Temperature);
 			} else if (data.hasOwnProperty("DHT22")) {
 				that.temperature = parseFloat(data.DHT22.Temperature);
+			} else if (data.hasOwnProperty("SI7021")) {
+				that.temperature = parseFloat(data.SI7021.Temperature);
 			} else if (data.hasOwnProperty("AM2301")) {
 				that.temperature = parseFloat(data.AM2301.Temperature);
 			} else if (data.hasOwnProperty("DHT11")) {
@@ -138,7 +140,7 @@ function TemperatureTasmotaAccessory(log, config) {
 			} else {return null}
 			that.service.setCharacteristic(Characteristic.CurrentTemperature, that.temperature);
 		} else if (topic == that.activityTopic) {
-			var status = message.toString(); 	
+			var status = message.toString();
 			that.activeStat = (status == that.activityParameter) ;
 			that.service.setCharacteristic(Characteristic.StatusActive, that.activeStat);
 		}
@@ -147,15 +149,15 @@ function TemperatureTasmotaAccessory(log, config) {
 	this.service
     	.getCharacteristic(Characteristic.CurrentTemperature)
     	.on('get', this.getState.bind(this));
-		
+
 	this.service
 		.getCharacteristic(Characteristic.CurrentTemperature)
 		.setProps({minValue: -50});
-                                                
+
 	this.service
 		.getCharacteristic(Characteristic.CurrentTemperature)
 		.setProps({maxValue: 125});
-		
+
     if(this.activityTopic !== "") {
 		this.service
 			.getCharacteristic(Characteristic.StatusActive)
